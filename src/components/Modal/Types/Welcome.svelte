@@ -1,8 +1,8 @@
 <script>
-	import { difficulty as difficultyStore } from '@sudoku/stores/difficulty';
-	import { startNew, startCustom } from '@sudoku/game';
-	import { validateSencode } from '@sudoku/sencode';
-	import { DIFFICULTIES } from '@sudoku/constants';
+	import { difficulty as difficultyStore } from '../../../stores/difficulty.js';
+	import { startNew, startCustom } from '../../../game.js';
+	import { validateSencode } from '../../../sencode.js';
+	import { DIFFICULTIES } from '../../../constants.js';
 
 	export let data = {};
 	export let hideModal;

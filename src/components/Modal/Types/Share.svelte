@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
-	import { BASE_URL } from '@sudoku/constants';
-	import { modal } from '@sudoku/stores/modal';
-	import { grid } from '@sudoku/stores/grid';
+	import { BASE_URL } from '../../../constants.js';
+	import { modal } from '../../../stores/modal.js';
+	import { grid } from '../../../stores/grid.js';
 	import Clipboard from '../../Utils/Clipboard.svelte';
 
 	export let data = {};

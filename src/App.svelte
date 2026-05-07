@@ -1,9 +1,9 @@
 <script>
 	import { onMount } from 'svelte';
-	import { validateSencode } from '@sudoku/sencode';
-	import game from '@sudoku/game';
-	import { modal } from '@sudoku/stores/modal';
-	import { gameWon } from '@sudoku/stores/game';
+	import { validateSencode } from './sencode.js';
+	import game from './game.js';
+	import { modal } from './stores/modal.js';
+	import { gameWon } from './stores/game.js';
 	import Board from './components/Board/index.svelte';
 	import Controls from './components/Controls/index.svelte';
 	import Header from './components/Header/index.svelte';

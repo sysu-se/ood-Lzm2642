@@ -1,10 +1,10 @@
 <script>
-	import game from '@sudoku/game';
-	import { validateSencode } from '@sudoku/sencode';
-	import { modal } from '@sudoku/stores/modal';
+	import game from '../../game.js';
+	import { validateSencode } from '../../sencode.js';
+	import { modal } from '../../stores/modal.js';
 	import { slide, fade } from 'svelte/transition';
-	import { DIFFICULTIES, DROPDOWN_DURATION, DIFFICULTY_CUSTOM } from '@sudoku/constants';
-	import { difficulty } from '@sudoku/stores/difficulty';
+	import { DIFFICULTIES, DROPDOWN_DURATION, DIFFICULTY_CUSTOM } from '../../constants.js';
+	import { difficulty } from '../../stores/difficulty.js';
 
 	let dropdownVisible = false;
 

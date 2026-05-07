@@ -7,6 +7,7 @@ import livereload from 'rollup-plugin-livereload';
 import svelte from 'rollup-plugin-svelte';
 import { terser } from 'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
+import path from 'path';
 
 const mode = process.env.NODE_ENV;
 const production = mode === 'production';
@@ -71,6 +72,22 @@ export default {
 		resolve({
 			browser: true,
 			dedupe:  ['svelte'],
+			alias: {
+				'@sudoku/constants': path.resolve(__dirname, 'src/constants.js'),
+				'@sudoku/sencode': path.resolve(__dirname, 'src/sencode.js'),
+				'@sudoku/game': path.resolve(__dirname, 'src/game.js'),
+				'@sudoku/stores/grid': path.resolve(__dirname, 'src/stores/grid.js'),
+				'@sudoku/stores/cursor': path.resolve(__dirname, 'src/stores/cursor.js'),
+				'@sudoku/stores/candidates': path.resolve(__dirname, 'src/stores/candidates.js'),
+				'@sudoku/stores/notes': path.resolve(__dirname, 'src/stores/notes.js'),
+				'@sudoku/stores/hints': path.resolve(__dirname, 'src/stores/hints.js'),
+				'@sudoku/stores/game': path.resolve(__dirname, 'src/stores/game.js'),
+				'@sudoku/stores/timer': path.resolve(__dirname, 'src/stores/timer.js'),
+				'@sudoku/stores/modal': path.resolve(__dirname, 'src/stores/modal.js'),
+				'@sudoku/stores/difficulty': path.resolve(__dirname, 'src/stores/difficulty.js'),
+				'@sudoku/stores/settings': path.resolve(__dirname, 'src/stores/settings.js'),
+				'@sudoku/stores/keyboard': path.resolve(__dirname, 'src/stores/keyboard.js'),
+			}
 		}),
 		commonjs(),
 
@@ -82,6 +99,7 @@ export default {
 		// browser on changes when not in production
 		!production && livereload({
 			watch: ['dist/bundle.js', 'dist/bundle.css'],
+                     host: '0.0.0.0',
 		}),
 
 		// If we're building for production (npm run build
@@ -103,7 +121,7 @@ function serve() {
 	return {
 		writeBundle() {
 			if (server) return;
-			server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
+			server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev', '--host', '0.0.0.0'], {
 				stdio: ['ignore', 'inherit', 'inherit'],
 				shell: true,
 			});

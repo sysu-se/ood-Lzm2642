@@ -1,10 +1,12 @@
 <script>
 	import { slide } from 'svelte/transition';
 	import Switch from '../../Utils/Switch.svelte';
-	import { settings as settingsStore } from '@sudoku/stores/settings';
-	import { MAX_HINTS } from '@sudoku/constants';
+	import { settings as settingsStore } from '../../../stores/settings.js';
+	import { MAX_HINTS } from '../../../constants.js';
 
 	export let data = {};
+	// ensure `data` is referenced to avoid Svelte unused-export warning
+	const _modalData_ref = data;
 	export let hideModal;
 
 	let settings = { ...$settingsStore };

@@ -1,0 +1,22 @@
+export PATH="/home/share/biezhi-env/node-v24/bin:$PATH"
+npm install --legacy-peer-deps
+
+rollup.config.js:
+!production && livereload({
+                        watch: ['dist/bundle.js', 'dist/bundle.css'],
+                     host: '0.0.0.0',
+                }),
+
+ server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev', '--host', '0.0.0.0'], {
+
+
+npm run dev
+
+ Your application is ready~! 🚀
+
+  ➡ Port 5000 is taken; using 36915 instead
+
+  - Local:      http://0.0.0.0:36915
+  - Network:    http://172.16.42.199:36915
+
+

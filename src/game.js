@@ -34,7 +34,7 @@ import {
 import { resetHints, useHint } from './stores/hints.js';
 import { cursor } from './stores/cursor.js';
 import { candidates } from './stores/candidates.js';
-import { difficulty, setDifficulty } from './stores/difficulty.js';
+import { setDifficulty } from './stores/difficulty.js';
 import { get } from 'svelte/store';
 
 /**
@@ -56,8 +56,6 @@ export function startNew(difficultyValue) {
   
   // 启动计时器
   startTimer();
-  
-  location.hash = '';
 }
 
 /**
@@ -153,9 +151,6 @@ export function resume() {
   resumeTimer();
 }
 
-// 别名导出，便于外部使用
-export { pause as pauseGame, resume as resumeGame };
-
 /**
  * 使用提示
  */
@@ -184,3 +179,6 @@ export default {
   pauseGame: pause,
   resumeGame: resume,
 };
+
+// 兼容：有些组件以命名导入方式使用 `pauseGame` / `resumeGame`
+export { pause as pauseGame, resume as resumeGame };

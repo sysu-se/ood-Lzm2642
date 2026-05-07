@@ -1,12 +1,12 @@
 <script>
-	import { timer } from '@sudoku/stores/timer';
-	import { pauseGame, resumeGame } from '@sudoku/game';
-	import { gamePaused } from '@sudoku/stores/game';
-	import { settings } from '@sudoku/stores/settings';
+	import { timer } from '../../../stores/timer.js';
+	import game from '../../../game.js';
+	import { gamePaused } from '../../../stores/game.js';
+	import { settings } from '../../../stores/settings.js';
 </script>
 
 <div class="timer-container">
-	<button class="btn btn-round" on:click={() => $gamePaused ? resumeGame() : pauseGame()} title="{$gamePaused ? 'Resume Game' : 'Pause Game'}">
+	<button class="btn btn-round" on:click={() => $gamePaused ? game.resumeGame() : game.pauseGame()} title="{$gamePaused ? 'Resume Game' : 'Pause Game'}">
 		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			{#if $gamePaused}
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.19 9.61L9.01 3.48A2.87 2.87 0 004.54 5.88v12.25a2.87 2.87 0 004.47 2.39l9.18-6.12a2.87 2.87 0 000-4.78v0z" />

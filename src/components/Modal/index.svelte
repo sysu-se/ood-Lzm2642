@@ -1,7 +1,7 @@
 <script>
 	import { fade, scale } from 'svelte/transition';
-	import { modal, modalData } from '@sudoku/stores/modal';
-	import { MODAL_NONE, MODAL_DURATION } from '@sudoku/constants';
+	import { modal, modalData } from '../../stores/modal.js';
+	import { MODAL_NONE, MODAL_DURATION } from '../../constants.js';
 	import types from './Types';
 
 	const MODALS_DISABLED_OVERLAY = ['welcome', 'gameover'];

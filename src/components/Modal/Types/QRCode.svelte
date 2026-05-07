@@ -1,5 +1,5 @@
 <script>
-	import { modal } from '@sudoku/stores/modal';
+	import { modal } from '../../../stores/modal.js';
 
 	export let data = {};
 
@@ -11,7 +11,7 @@
 	}
 </script>
 
-<img class="h-full w-full" src={image} />
+<img class="h-full w-full" src={image} alt="QR code image" />
 
 <div class="mt-3">
 	<button class="btn btn-small w-full" on:click={() => modal.show('share', data)}>
