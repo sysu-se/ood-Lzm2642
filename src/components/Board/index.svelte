@@ -1,7 +1,7 @@
 <script>
 	import { BOX_SIZE } from '../../constants.js';
 	import { gamePaused } from '../../stores/game.js';
-	import { grid, userGrid, invalidCells } from '../../stores/grid.js';
+	import { grid, userGrid, invalidCells, inExplore, exploreConflict } from '../../stores/grid.js';
 	import { settings } from '../../stores/settings.js';
 	import { cursor } from '../../stores/cursor.js';
 	import { candidates } from '../../stores/candidates.js';
@@ -35,7 +35,7 @@
 	</div>
 	<div class="board-padding absolute inset-0 flex justify-center">
 
-		<div class="bg-white shadow-2xl rounded-xl overflow-hidden w-full h-full max-w-xl grid" style="grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr);" class:bg-gray-200={$gamePaused}>
+		<div class="bg-white shadow-2xl rounded-xl overflow-hidden w-full h-full max-w-xl grid" style="grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr);" class:bg-gray-200={$gamePaused} class:explore-border={$inExplore} class:explore-conflict-border={$inExplore && $exploreConflict}>
 
 			{#each $userGrid as row, y}
 				{#each row as value, x}
@@ -60,5 +60,13 @@
 <style>
 	.board-padding {
 		@apply px-4 pb-4;
+	}
+
+	.explore-border {
+		box-shadow: 0 0 0 3px #3b82f6, 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+	}
+
+	.explore-conflict-border {
+		box-shadow: 0 0 0 3px #ef4444, 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 	}
 </style>

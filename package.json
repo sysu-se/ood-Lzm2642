@@ -13,7 +13,10 @@
 		"test:sudoku": "vitest run tests/hw1/02-sudoku-basic.test.js",
 		"test:clone": "vitest run tests/hw1/03-clone.test.js",
 		"test:game": "vitest run tests/hw1/04-game-undo-redo.test.js",
-		"test:serialization": "vitest run tests/hw1/05-serialization.test.js"
+		"test:serialization": "vitest run tests/hw1/05-serialization.test.js",
+		"test:hint": "vitest run tests/hw2/06-hint-candidates.test.js",
+		"test:explore": "vitest run tests/hw2/07-explore.test.js",
+		"test:hw2": "vitest run tests/hw2/"
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "16.0.0",

@@ -9,7 +9,8 @@ import {
   startNewGame,
   startCustomGame,
   setGuess,
-  applyHint,
+  showCandidatesHint,
+  fillNextStepHint,
   getGame,
   checkWin,
   userGrid,
@@ -31,7 +32,7 @@ import {
   resumeTimer,
 } from './stores/timer.js';
 
-import { resetHints, useHint } from './stores/hints.js';
+import { resetHints, useHint, hintMode } from './stores/hints.js';
 import { cursor } from './stores/cursor.js';
 import { candidates } from './stores/candidates.js';
 import { setDifficulty } from './stores/difficulty.js';
@@ -156,11 +157,17 @@ export function resume() {
  */
 export function hint() {
   const currentCursor = get(cursor);
+  const mode = get(hintMode);
   
-  if (currentCursor.x !== null && currentCursor.y !== null) {
-    if (useHint()) {
-      applyHint(currentCursor);
+  if (mode === 'show') {
+    if (currentCursor.x !== null && currentCursor.y !== null) {
+      const result = showCandidatesHint(currentCursor);
+      if (result) useHint();
     }
+  } else {
+    const cursorArg = (currentCursor.x !== null && currentCursor.y !== null) ? currentCursor : null;
+    const result = fillNextStepHint(cursorArg);
+    if (result) useHint();
   }
 }
 

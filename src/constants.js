@@ -31,14 +31,14 @@ export const BASE_URL = typeof window !== 'undefined' ? window.location.origin :
 export const GAME_OVER_CELEBRATIONS = ['🎉', '🎊', '🏆', '⭐'];
 
 // 候选数坐标（用于显示 3x3 小数字）
-export const CANDIDATE_COORDS = {
-  1: { x: 0, y: 0 },
-  2: { x: 1, y: 0 },
-  3: { x: 2, y: 0 },
-  4: { x: 0, y: 1 },
-  5: { x: 1, y: 1 },
-  6: { x: 2, y: 1 },
-  7: { x: 0, y: 2 },
-  8: { x: 1, y: 2 },
-  9: { x: 2, y: 2 },
-};
+export const CANDIDATE_COORDS = [
+  { x: 0, y: 0 },  // 1
+  { x: 1, y: 0 },  // 2
+  { x: 2, y: 0 },  // 3
+  { x: 0, y: 1 },  // 4
+  { x: 1, y: 1 },  // 5
+  { x: 2, y: 1 },  // 6
+  { x: 0, y: 2 },  // 7
+  { x: 1, y: 2 },  // 8
+  { x: 2, y: 2 },  // 9
+];

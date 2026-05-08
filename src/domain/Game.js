@@ -87,16 +87,16 @@ export function createGame({ sudoku }) {
 
     /**
      * 在探索模式中执行猜测（不会影响主历史）
-     * 返回 { success: boolean, conflict: boolean }
+     * 返回 { success: boolean, conflict: boolean, triedPath: boolean }
      */
     exploreGuess(move) {
       if (!exploreSession) {
         // 非探索，直接沿用普通 guess
-        return { success: this.guess(move), conflict: false };
+        return { success: this.guess(move), conflict: false, triedPath: false };
       }
 
       const success = currentSudoku.guess(move);
-      if (!success) return { success: false, conflict: false };
+      if (!success) return { success: false, conflict: false, triedPath: false };
 
       // 保存分支快照
       exploreSession.branchHistory = exploreSession.branchHistory.slice(0, exploreSession.branchIndex + 1);
@@ -106,12 +106,37 @@ export function createGame({ sudoku }) {
       // 检查冲突
       const conflicts = currentSudoku.getInvalidCells();
       if (conflicts.length > 0) {
+        const currentKey = JSON.stringify(currentSudoku.toJSON());
+        const wasTried = exploreSession.triedPaths.has(currentKey);
         // 记录失败路径的序列化表示，便于记忆
-        exploreSession.triedPaths.add(JSON.stringify(currentSudoku.toJSON()));
-        return { success: true, conflict: true };
+        exploreSession.triedPaths.add(currentKey);
+        return { success: true, conflict: true, triedPath: wasTried };
       }
 
-      return { success: true, conflict: false };
+      // 检查当前局面是否匹配之前失败的探索路径
+      const currentKey = JSON.stringify(currentSudoku.toJSON());
+      const isTriedPath = exploreSession.triedPaths.has(currentKey);
+
+      return { success: true, conflict: false, triedPath: isTriedPath };
+    },
+
+    /**
+     * 检查当前探索局面是否匹配已失败的路径
+     * @returns {boolean}
+     */
+    isExploreTriedPath() {
+      if (!exploreSession) return false;
+      const currentKey = JSON.stringify(currentSudoku.toJSON());
+      return exploreSession.triedPaths.has(currentKey);
+    },
+
+    /**
+     * 检查当前探索局面是否有冲突
+     * @returns {boolean}
+     */
+    hasExploreConflict() {
+      if (!exploreSession) return false;
+      return currentSudoku.getInvalidCells().length > 0;
     },
 
     /**

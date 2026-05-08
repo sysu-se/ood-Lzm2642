@@ -1,6 +1,6 @@
 <script>
 	import { candidates } from '../../../stores/candidates.js';
-	import { userGrid, applyHint, getCandidatesAt, inExplore, enterExplore, commitExplore, abortExplore, exploreUndo, canUndoStore, canRedoStore } from '../../../stores/grid.js';
+	import { userGrid, showCandidatesHint, fillNextStepHint, getCandidatesAt, inExplore, exploreConflict, exploreTriedPath, exploreMessage, enterExplore, commitExplore, abortExplore, exploreUndo, exploreResetToStart, canUndoStore, canRedoStore } from '../../../stores/grid.js';
 	import { cursor } from '../../../stores/cursor.js';
 	import { hints, useHint, hintMode, toggleHintMode } from '../../../stores/hints.js';
 	import { notes } from '../../../stores/notes.js';
@@ -20,24 +20,27 @@
 	}
 
 	function handleHint() {
-		if (hintsAvailable && $cursor.x !== null && $cursor.y !== null) {
-			if ($candidates.hasOwnProperty($cursor.x + ',' + $cursor.y)) {
-				candidates.clear($cursor);
-			}
+		if (!hintsAvailable) return;
 
-			if (useHint()) {
-				// 根据模式决定行为
-				if ($hintMode === 'show') {
-					const cand = getCandidatesAt($cursor);
-					if (cand && cand.length) {
-						candidates.clear($cursor);
-						for (const v of cand) candidates.add($cursor, v);
+		try {
+			if ($hintMode === 'show') {
+				// 候选提示：需要选中一个空格
+				if ($cursor.x !== null && $cursor.y !== null) {
+					const result = showCandidatesHint($cursor);
+					if (result) {
+						useHint();
 					}
-				} else {
-					// 'fill' 模式：使用 applyHint 的默认行为（会直接填写唯一推断步或显示候选）
-					applyHint($cursor);
+				}
+			} else {
+				// 下一步提示：优先光标格，否则全盘搜索
+				const cursorArg = ($cursor.x !== null && $cursor.y !== null) ? $cursor : null;
+				const result = fillNextStepHint(cursorArg);
+				if (result) {
+					useHint();
 				}
 			}
+		} catch (e) {
+			console.error('Hint error:', e);
 		}
 	}
 
@@ -60,6 +63,10 @@
 	function handleExploreUndo() {
 		exploreUndo();
 	}
+
+	function handleExploreReset() {
+		exploreResetToStart();
+	}
 </script>
 
 <div class="action-buttons space-x-3">
@@ -71,15 +78,25 @@
 	</button>
 
 	{#if $inExplore}
-		<button class="btn btn-round" on:click={handleExploreUndo} title="Explore Undo">
-			Undo
-		</button>
-		<button class="btn btn-round btn-primary" on:click={handleCommitExplore} title="Commit Explore">
-			Commit
-		</button>
-		<button class="btn btn-round btn-danger" on:click={handleAbortExplore} title="Abort Explore">
-			Abort
-		</button>
+		<div class="explore-controls">
+			{#if $exploreConflict || $exploreTriedPath}
+				<div class="explore-message" class:conflict-msg={$exploreConflict} class:tried-msg={$exploreTriedPath}>
+					{$exploreMessage}
+				</div>
+			{/if}
+			<button class="btn btn-small" on:click={handleExploreUndo} title="Explore Undo">
+				↩ 撤销
+			</button>
+			<button class="btn btn-small" on:click={handleExploreReset} title="Reset to start">
+				⟲ 起点
+			</button>
+			<button class="btn btn-round btn-primary" on:click={handleCommitExplore} title="Commit Explore">
+				✓ 提交
+			</button>
+			<button class="btn btn-round btn-danger" on:click={handleAbortExplore} title="Abort Explore">
+				✕ 放弃
+			</button>
+		</div>
 	{:else}
 		<button class="btn btn-round" on:click={handleEnterExplore} title="Enter Explore">
 			Explore
@@ -87,7 +104,7 @@
 	{/if}
 
 	<button class="btn btn-small" on:click={handleToggleHintMode} title="Toggle hint mode">
-		{#if $hintMode === 'fill'} 填写模式 {:else} 仅提示 {/if}
+		{#if $hintMode === 'fill'} 下一步 {:else} 候选 {/if}
 	</button>
 
 	<button class="btn btn-round" disabled={$gamePaused || !$canRedoStore} on:click={handleRedo} title="Redo">
@@ -96,7 +113,7 @@
 		</svg>
 	</button>
 
-	<button class="btn btn-round btn-badge" disabled={$keyboardDisabled || !hintsAvailable || $cursor.x === null || $cursor.y === null || $userGrid[$cursor.y][$cursor.x] !== 0} on:click={handleHint} title="Hints ({$hints})">
+	<button class="btn btn-round btn-badge" disabled={$keyboardDisabled || !hintsAvailable || ($hintMode === 'show' && ($cursor.x === null || $cursor.y === null || $userGrid[$cursor.y][$cursor.x] !== 0))} on:click={handleHint} title="Hints ({$hints})">
 		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
 		</svg>
@@ -120,6 +137,22 @@
 <style>
 	.action-buttons {
 		@apply flex flex-wrap justify-evenly self-end;
+	}
+
+	.explore-controls {
+		@apply flex flex-wrap items-center gap-1;
+	}
+
+	.explore-message {
+		@apply text-xs px-2 py-1 rounded w-full text-center mb-1;
+	}
+
+	.conflict-msg {
+		@apply bg-red-100 text-red-700 border border-red-300;
+	}
+
+	.tried-msg {
+		@apply bg-yellow-100 text-yellow-700 border border-yellow-300;
 	}
 
 	.btn-badge {

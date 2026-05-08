@@ -6,6 +6,10 @@
   - `getCandidates(row, col)`：返回指定空格的候选数字数组（1-9），通过检查行、列和 3x3 方格中的已用数字过滤。
   - `findNextStep()`：扫描全盘并返回第一个只有单一候选值的单元，返回格式 `{ row, col, value, candidates }`，若无返回 `null`。
 
+- 在 UI 层提供两种提示模式：
+  - **候选提示**（`showCandidatesHint`）：在光标所在空格显示候选数集合（不填入），通过 `candidates` store 在格子内渲染小数字。
+  - **下一步提示**（`fillNextStepHint`）：优先检查光标格是否为唯一候选，若否则全盘搜索，找到后自动填入；若全盘无唯一候选，降级为显示光标格候选列表。
+
 实现理由：提示是基于当前局面、仅依赖数独规则的能力，放在领域对象 `Sudoku` 中最合适，UI 通过调用接口获取提示并渲染。
 
 ## 2. 提示属于 `Sudoku` 还是 `Game`？为什么？
@@ -17,14 +21,29 @@
 
 - 在 `Game` 中新增探索会话（`exploreSession`），提供以下操作：
   - `enterExplore()`：以当前 `historyIndex` 为起点，创建一个独立的分支历史 `branchHistory`（第 0 项为起点）。将 `currentSudoku` 指向分支起点的拷贝，进入探索模式。
-  - `exploreGuess(move)`：在探索模式中执行一次填数；将新的局面推入 `branchHistory`。若出现冲突（`getInvalidCells().length > 0`），记录该失败路径（序列化 JSON）到 `triedPaths`，并返回 `{ success: true, conflict: true }`。
+  - `exploreGuess(move)`：在探索模式中执行一次填数；将新的局面推入 `branchHistory`。若出现冲突（`getInvalidCells().length > 0`），记录该失败路径（序列化 JSON）到 `triedPaths`，并返回 `{ success: true, conflict: true, triedPath: boolean }`。若当前局面与已记录的失败路径匹配，返回 `triedPath: true`。
   - `exploreUndo()`：在探索分支中撤销一步（回到上一个分支快照）。
   - `exploreResetToStart()`：回到探索起点（分支第 0 项）。
   - `commitExplore()`：将分支历史（跳过第 0 项）合并到主历史，更新 `historyIndex` 并退出探索模式。
   - `abortExplore()`：放弃分支，恢复到进入探索前的主历史索引，退出探索模式。
   - `isInExplore()`：查询是否处于探索模式。
+  - `hasExploreConflict()`：检查当前探索局面是否有冲突。
+  - `isExploreTriedPath()`：检查当前局面是否匹配已失败的路径。
 
-实现理由：采用“临时子会话 + 分支历史”的方式保持主历史清洁，并方便回滚或提交；同时满足作业对“回溯”“冲突判定”“记忆失败路径”的要求。
+实现理由：采用"临时子会话 + 分支历史"的方式保持主历史清洁，并方便回滚或提交；同时满足作业对"回溯""冲突判定""记忆失败路径"的要求。
+
+### 冲突检测与失败路径记忆
+
+- 每次探索填数后检查冲突，若发现冲突则将当前局面序列化后存入 `triedPaths` 集合。
+- 重新填数时，若当前局面已存在于 `triedPaths` 中，返回 `triedPath: true` 标识，UI 层通过 `exploreTriedPath` store 和黄色提示告知用户。
+- 冲突时返回 `conflict: true`，UI 层通过 `exploreConflict` store 和红色提示告知用户，棋盘边框也会变红。
+
+### UI 提示
+
+- 探索模式下棋盘显示蓝色边框（`explore-border`），冲突时边框变红（`explore-conflict-border`）。
+- 操作区显示：撤销（↩）、回到起点（⟲）、提交（✓）、放弃（✕）。
+- 冲突时显示红色提示条"冲突！此路径不可行，请回退或放弃探索"。
+- 重复失败路径时显示黄色提示条"此局面与之前失败的探索路径相同，建议回退"。
 
 ## 4. 主局面与探索局面的关系是什么？
 
@@ -54,15 +73,15 @@
 - `Sudoku` 的实现在 [src/domain/Sudoku.js](src/domain/Sudoku.js)
   - 新增：`getCandidates(row,col)`、`findNextStep()`
 - `Game` 的实现在 [src/domain/Game.js](src/domain/Game.js)
-  - 新增探索支持：`enterExplore()`、`exploreGuess()`、`exploreUndo()`、`exploreResetToStart()`、`commitExplore()`、`abortExplore()`、`isInExplore()`
+  - 新增探索支持：`enterExplore()`、`exploreGuess()`、`exploreUndo()`、`exploreResetToStart()`、`commitExplore()`、`abortExplore()`、`isInExplore()`、`hasExploreConflict()`、`isExploreTriedPath()`
+- `grid.js` 的实现在 [src/stores/grid.js](src/stores/grid.js)
+  - 新增响应式状态：`inExplore`、`exploreConflict`、`exploreTriedPath`、`exploreMessage`
+  - 新增包装函数：`enterExplore()`、`exploreGuess()`、`exploreUndo()`、`exploreResetToStart()`、`commitExplore()`、`abortExplore()`
+- UI 组件：
+  - [src/components/Controls/ActionBar/Actions.svelte](src/components/Controls/ActionBar/Actions.svelte) — 探索操作按钮与提示消息
+  - [src/components/Board/index.svelte](src/components/Board/index.svelte) — 探索模式棋盘边框样式
 
-## 测试建议
+## 测试
 
-- 为 `Sudoku.getCandidates()` 和 `findNextStep()` 添加单元测试，验证常见场景与边界。
-- 为 `Game` 的探索流程添加集成测试：进入探索、多步尝试导致冲突、回退到起点、提交并验证主历史更新、放弃并验证主历史未变。
-
----
-
-如果你希望，我可以：
-- 添加相应的测试文件到 `tests/hw1`（或新建 `tests/hw2`）并运行现有测试；
-- 在前端 `stores` / `components` 中接入这些新 API（例如在 `Controls` 中新增“Hint”按钮与“Explore”面板）。
+- [tests/hw2/06-hint-candidates.test.js](tests/hw2/06-hint-candidates.test.js) — 测试 `getCandidates()` 和 `findNextStep()`
+- [tests/hw2/07-explore.test.js](tests/hw2/07-explore.test.js) — 测试探索模式的进入/提交/放弃、撤销/回到起点、冲突检测、失败路径记忆、主历史保持
